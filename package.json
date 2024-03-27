@@ -1,0 +1,21 @@
+{
+  "name": "web601_a1",
+  "version": "1.0.0",
+  "description": "Assessment introduction:\r In this assessment, you will use Node.js to develop a RESTful API that demonstrates key web application functionalities\r such as handling requests and responses, handling HTTP methods, and implementing middleware for server\r functionality. This assessment assesses your ability to use theoretical understanding in real-world web development,\r particularly in server-side Node.js programming. By completing this assessment, you will meet the learning outcome\r (LO1) of applying the fundamentals of web applications, including HTTP, and demonstrate that you are knowledgeable\r in developing web functionality on the server.",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "ejs": "^3.1.9",
+    "express": "^4.18.3",
+    "mongoose": "^8.2.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

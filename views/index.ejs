@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>To-Do List</title>
+    
+</head>
+<body>
+    <div class="container">
+        <h1>To-Do List</h1>
+        <form action="/" method="POST" autocomplete="off" id="todoForm">
+            <input type="text" id="todoValue" name="todoValue" placeholder="What needs to be done?">
+            <button type="submit">Add Task</button>
+        </form>
+
+        <% if(data) { %>
+            <% data.forEach(todoValue => { %>
+                <div class="todo-list">
+                    <!-- Tasks will be dynamically added here -->
+                    <div class="todo-value" data-id="<%= todoValue.id %>">
+                        <span><%= todoValue.todo %></span>
+                        <button class="todo-edit"  data-id="<%= todoValue.id %>" >Edit</button>
+                        
+                    <button class="todo-complete" data-id="<%= todoValue.id %>"><svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 50 50">
+                        <path d="M 41.9375 8.625 C 41.273438 8.648438 40.664063 9 40.3125 9.5625 L 21.5 38.34375 L 9.3125 27.8125 C 8.789063 27.269531 8.003906 27.066406 7.28125 27.292969 C 6.5625 27.515625 6.027344 28.125 5.902344 28.867188 C 5.777344 29.613281 6.078125 30.363281 6.6875 30.8125 L 20.625 42.875 C 21.0625 43.246094 21.640625 43.410156 22.207031 43.328125 C 22.777344 43.242188 23.28125 42.917969 23.59375 42.4375 L 43.6875 11.75 C 44.117188 11.121094 44.152344 10.308594 43.78125 9.644531 C 43.410156 8.984375 42.695313 8.589844 41.9375 8.625 Z"></path>
+                        </svg></button>
+                        <button class="todo-delete" data-id="<%= todoValue.id %>">Delete</button>
+                    </div>
+                </div>
+            <% }); %>
+        <% } %>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to delete buttons
+            const deleteButtons = document.querySelectorAll('.todo-delete');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', async function(event) {
+                    const todoId = button.dataset.id;
+                    const endPoint = `/${todoId}`;
+                    try {
+                        const response = await fetch(endPoint, {
+                            method: 'DELETE'
+                        });
+                        if (response.ok) {
+                            // Remove the task from the DOM
+                            button.parentNode.remove();
+                        } else {
+                            console.error('Failed to delete todo item');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                });
+            });
+
+        });
+
+        // Add event listeners to complete buttons
+    const completeButtons = document.querySelectorAll('.todo-complete');
+    completeButtons.forEach(button => {
+        button.addEventListener('click', async function(event) {
+            const todoId = button.dataset.id;
+            // Toggle strikethrough effect
+            const todoValue = document.querySelector(`[data-id="${todoId}"]`);
+            todoValue.classList.toggle('strikethrough');
+        });
+    });
+
+
+
+
+//     // Function to convert task text to editable input field
+// function convertToInputField(todoValue) {
+//     // Get the span element containing the task text
+//     const taskText = todoValue.querySelector('span');
+//     // Create an input field with the current task text
+//     const inputField = document.createElement('input');
+//     inputField.type = 'text';
+//     inputField.value = taskText.textContent.trim();
+//     // Replace the span with the input field
+//     todoValue.replaceChild(inputField, taskText);
+//     // Focus on the input field
+//     inputField.focus();
+//     // Add event listener to handle editing on blur (when focus is lost)
+//     inputField.addEventListener('blur', handleEdit);
+// }
+
+// // Function to handle editing of task text
+// async function handleEdit(event) {
+//     const inputField = event.target;
+//     const todoValue = inputField.parentElement;
+//     const taskText = document.createElement('span');
+//     taskText.textContent = inputField.value.trim();
+//     todoValue.replaceChild(taskText, inputField);
+//     // You can add code here to update the task text in the database using fetch or any other method
+//     // For now, let's log the updated task text
+//     console.log('Edited task:', taskText.textContent);
+// }
+
+// // Add event listeners to edit buttons
+// const editButtons = document.querySelectorAll('.todo-edit');
+// editButtons.forEach(button => {
+//     button.addEventListener('click', async function(event) {
+//         // Get the parent element of the button (the todo-value div)
+//         const todoValue = button.parentElement;
+//         // Call function to convert task text to editable input field
+//         convertToInputField(todoValue);
+//     });
+// });
+
+
+// Add event listeners to edit buttons
+const editButtons = document.querySelectorAll('.todo-edit');
+editButtons.forEach(button => {
+    button.addEventListener('click', async function(event) {
+        const todoValue = button.parentElement;
+        const taskText = todoValue.querySelector('span');
+        const inputField = document.createElement('input');
+        inputField.type = 'text';
+        inputField.value = taskText.textContent.trim();
+        todoValue.replaceChild(inputField, taskText);
+        
+        // Add event listener to handle editing on pressing Enter key or blurring the input field
+        inputField.addEventListener('keypress', async function(event) {
+            if (event.key === 'Enter') {
+                const updatedTodoValue = inputField.value.trim();
+                if (updatedTodoValue !== '') {
+                    const todoId = button.dataset.id;
+                    try {
+                        const response = await fetch(`/${todoId}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ todoValue: updatedTodoValue })
+                        });
+                        if (response.ok) {
+                            // Update the task text in the DOM if the update was successful
+                            const taskSpan = document.createElement('span');
+                            taskSpan.textContent = updatedTodoValue;
+                            todoValue.replaceChild(taskSpan, inputField);
+                            console.log('Task updated successfully:', updatedTodoValue);
+                        } else {
+                            console.error('Failed to update todo item');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                }
+            }
+        });
+
+        inputField.addEventListener('blur', async function(event) {
+            // Handle editing when focus is lost (e.g., clicking outside the input field)
+            const updatedTodoValue = inputField.value.trim();
+            if (updatedTodoValue !== '') {
+                const todoId = button.dataset.id;
+                try {
+                    const response = await fetch(`/${todoId}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ todoValue: updatedTodoValue })
+                    });
+                    if (response.ok) {
+                        // Update the task text in the DOM if the update was successful
+                        const taskSpan = document.createElement('span');
+                        taskSpan.textContent = updatedTodoValue;
+                        todoValue.replaceChild(taskSpan, inputField);
+                        console.log('Task updated successfully:', updatedTodoValue);
+                    } else {
+                        console.error('Failed to update todo item');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+        });
+
+        inputField.focus();
+    });
+});
+
+
+    </script>
+</body>
+</html>
